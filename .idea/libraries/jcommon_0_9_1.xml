@@ -1,0 +1,17 @@
+<component name="libraryTable">
+  <library name="jcommon-0.9.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/jcommon-0.9.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/utils.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/stockmetrics.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/MetricsReloadedOpenAPI.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/MetricsReloaded.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jfreechart-0.9.16.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/args4j-2.32.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/args4j-2.32.jar!/OSGI-OPT/src" />
+    </SOURCES>
+  </library>
+</component>

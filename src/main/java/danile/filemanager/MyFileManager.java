@@ -1,32 +1,22 @@
 package danile.filemanager;
 
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.Image;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
+import java.io.*;
+import java.util.Arrays;
+import java.util.List;
 
-import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JTextField;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.event.AncestorListener;
 
 public class MyFileManager {
 
@@ -34,13 +24,21 @@ public class MyFileManager {
 	private JTextField textField;
 	private File file;
 	private File files [] ;
-	JButton btnConfirm = new JButton("Confirm");
-	JButton btnNewButton = new JButton("Delete");
-	JButton btnNewButton1 = new JButton("<");
-	JTextPane textPane;
-	
-	public MyFileManager() {
+	private JButton btnConfirm = new JButton("Confirm");
+	private JButton btnDelete = new JButton("Delete");
+	private JButton btnBack = new JButton("<");
+	private JTextPane textPane;
+	private JPanel panel = new JPanel();
+
+
+
+	private MyFileManager()
+	{
 		initialize();
+	}
+
+	public static MyFileManager newInstance(){
+		return new MyFileManager();
 	}
 
 	
@@ -54,174 +52,134 @@ public class MyFileManager {
 		textField.setBounds(41, 0, 206, 20);
 		frame.getContentPane().add(textField);
 		textField.setColumns(10);
-		textField.setText("C:");
+		textField.setText(System.getProperty("os.name").toLowerCase().equals("linux")?"/home":"C:");
 		
 		btnConfirm.setBounds(341, 0, 94, 20);
 		frame.getContentPane().add(btnConfirm);
-		
+
+		panelOne();
 		frame.getContentPane().add(scrollPane());
-		frame.getContentPane().add(panel2());
+		frame.getContentPane().add(panelTwo());
 		
 		
-		btnNewButton.setBounds(248, 0, 94, 20);
-		frame.getContentPane().add(btnNewButton);
+		btnDelete.setBounds(248, 0, 94, 20);
+		frame.getContentPane().add(btnDelete);
 		
 		
-		btnNewButton1.setBounds(0, 0, 41, 23);
-		frame.getContentPane().add(btnNewButton1);
+		btnBack.setBounds(0, 0, 41, 23);
+		frame.getContentPane().add(btnBack);
 		frame.setVisible(true);
 	}
 	private JScrollPane scrollPane() 
 	{
-		JScrollPane scrollPane = new JScrollPane(panel1());
+		JScrollPane scrollPane = new JScrollPane(this.panel);
 		scrollPane.setBounds(0, 21, 200, 240);
 		return scrollPane;
 	}
 	
-	private JPanel panel1() 
+	private void panelOne()
 	{
-		final JPanel panel = new JPanel();
-		panel.setBounds(0, 21, 200, 240);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+		this.panel.setBounds(0, 21, 200, 240);
+		this.panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		file = new File(textField.getText());
 		File[] arrs = file.listFiles();
 		
-		btnNewButton1.addActionListener(new ActionListener() {
+		buttonActionComplete();
+		this.btnConfirm.addActionListener(listenerConfirm(textField));
 
-			
-			public void actionPerformed(ActionEvent e) {
-				String str = textField.getText();
-				if(str.indexOf("/") > 0) 
-				{
-					String str2 = str.substring(0, str.lastIndexOf("/"));
-					textField.setText(str2);	
-				} else
-					try {
-						throw new Exception();
-					} catch (Exception e1) {
-						System.out.println("No path back");
-					}
-				
-				
-				
-			}});
-		btnNewButton.addActionListener(new ActionListener() {
-
-			
-			public void actionPerformed(ActionEvent arg0) {
-				
-				File file = new File(textField.getText());
-				File[] files = file.listFiles();
-				if(files != null) 
-				{
-					for(File f : files) 
-					{
-						f.delete();
-					}
-					System.out.println("Папка была удалена");
-				}else
-					System.out.println("Не найдено");
-				file.delete();
-				
-			}});
-		btnConfirm.addActionListener(new ActionListener() {
-
-			
-			public void actionPerformed(ActionEvent arg0) {
-				panel.setVisible(false);
-				panel.removeAll();
-				file = new File(textField.getText());
-				File[] arrs = file.listFiles();
-				if(file.exists()) {
-				for(int i = 0; i < arrs.length;i++) 
-				{
-					 
-					if(arrs[i].isDirectory()) 
-					{
-						final JButton button = new JButton(arrs[i].getName());
-						panel.add(button);
-						panel.setVisible(true);
-						button.addActionListener(new ActionListener() {
-
-							
-							public void actionPerformed(ActionEvent arg0) {
-								textField.setText(textField.getText() + "/" + button.getText());
-								panel.setVisible(true);
-								
-							}});
-					}else
-						if(arrs[i].isFile())
-						{
-							final JButton button = new JButton(arrs[i].getName());
-							panel.add(button);
-							panel.setVisible(true);
-							 if(arrs[i].getName().endsWith(".txt")) 
-							 {
-								 button.addActionListener(new ActionListener() {
-
-										
-										public void actionPerformed(ActionEvent arg0) {
-										    try{
-										        FileInputStream fstream = new FileInputStream(textField.getText() + "/" + button.getText());
-										        BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-										        String strLine;
-									
-										        while ((strLine = br.readLine()) != null){
-										           textPane.setText(strLine);
-										        }
-										     }catch (IOException e){
-										        System.out.println("ERROR");
-										     }
-											
-										}}); 
-							 }else
-								 
-								 if(arrs[i].getName().endsWith(".jpg")) 
-								 {
-									 
-									 final String name = new String( arrs[i].getName());
-									 button.addActionListener(new ActionListener() {
-
-											
-											public void actionPerformed(ActionEvent arg0) {
-												textPane.setVisible(false);
-												textPane.setText("");
-												String path = textField.getText() + "/" + name; 
-												System.out.println(path);
-												textPane.insertIcon(new ImageIcon(path));
-												textPane.setVisible(true);
-												
-											}}); 
-								 }
-							
-						}
-				
-					}
-			} else
-					try {
-						throw new Exception();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						System.out.println("WRONG PATH");
-					}
-				
-				
-				
-			}});
-		
-		
-		return panel;
 	}
-	
-	private JPanel panel2() 
+	private JPanel panelTwo()
 	{
 		JPanel panel2 = new JPanel();
 		panel2.setBounds(226, 21, 198, 238);
 		panel2.setLayout(null);
-		
+
 		textPane = new JTextPane();
-		textPane.setBounds(10, 11, 178, 216);
+		textPane.setBounds(10, 11, 300, 300);
 		panel2.add(textPane);
 		return panel2;
+
+	}
+
+	private ActionListener listenerConfirm(JTextField path) {
+		return arg -> {
+			System.out.println("HELLO");
+			this.panel.setVisible(false);
+			this.panel.removeAll();
+			file = new File(path.getText());
+			List<File> fileList = Arrays.asList(file.listFiles().length == 0 ? null : file.listFiles());
+			if (fileList.size() != 0) {
+				this.panel.setVisible(false);
+				fileList.stream().forEach(file -> {
+					if (file.isDirectory()) {
+						JButton button = new JButton(file.getName());
+						this.panel.add(button);
+						button.addActionListener((arg0) -> {
+							path.setText(path.getText() + "/" + button.getText());
+						});
+					} else if (file.isFile()) {
+						JButton button = new JButton(file.getName());
+						if (file.getName().endsWith(".txt")) {
+							this.panel.add(button);
+							button.addActionListener(arg0 -> {
+								try (BufferedReader br = new BufferedReader(new FileReader(path.getText() + "/" + button.getText()))) {
+									String strLine = null;
+									while ((strLine = br.readLine()) != null) {
+										textPane.setText(strLine);
+									}
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							});
+						} else if (file.getName().endsWith(".jpg")) {
+							this.panel.add(button);
+							button.addActionListener(arg0 -> {
+								textPane.setVisible(false);
+								textPane.setText("");
+								String newPath = path.getText() + "/" + file.getName();
+								System.out.println(path);
+								textPane.insertIcon(new ImageIcon(newPath));
+								textPane.setVisible(true);
+							});
+						}
+					}
+
+				});
+				this.panel.setVisible(true);
+			}
+		};
+	}
+	private ActionListener listenerDelete()
+	{
+		return arg->{
+			File file = new File(textField.getText());
+			List<File> fileList = Arrays.asList(file.listFiles().length == 0?null:file.listFiles());
+			if(fileList.size() != 0)
+			{
+				fileList.stream().forEach(fileInner -> fileInner.delete());
+			}
+			file.delete();
+			this.textField.setText(textField.getText().substring(0,textField.getText().lastIndexOf("/")));
+			this.btnConfirm.doClick();
+		};
+	}
+	private ActionListener listenerBack()
+	{
+		return arg->{
+			String str = textField.getText();
+
+			if(str.lastIndexOf("/") != 0)
+			{
+				this.textField.setText(str.substring(0,str.lastIndexOf("/")));
+			}
+			this.btnConfirm.doClick();
+		};
+	}
+	private void buttonActionComplete()
+	{
+		this.btnBack.addActionListener(listenerBack());
+		this.btnDelete.addActionListener(listenerDelete());
+
 	}
 }
